@@ -11,53 +11,46 @@ describe('api', function() {
       map.put(key, value1);
       map.put(key, value2);
       expect(map.get(key)).toBe(value2);
-      expect(map.get({})).toBe(undefined);
+      expect(map.get({})).toBeUndefined();
       expect(map.remove(key)).toBe(value2);
-      expect(map.get(key)).toBe(undefined);
+      expect(map.get(key)).toBeUndefined();
     });
 
     it('should init from an array', function() {
       var map = new HashMap(['a','b']);
       expect(map.get('a')).toBe(0);
       expect(map.get('b')).toBe(1);
-      expect(map.get('c')).toBe(undefined);
-    });
-  });
-
-
-  describe('HashQueueMap', function() {
-    it('should do basic crud with collections', function() {
-      var map = new HashQueueMap();
-      map.push('key', 'a');
-      map.push('key', 'b');
-      expect(map[hashKey('key')]).toEqual(['a', 'b']);
-      expect(map.peek('key')).toEqual('a');
-      expect(map[hashKey('key')]).toEqual(['a', 'b']);
-      expect(map.shift('key')).toEqual('a');
-      expect(map.peek('key')).toEqual('b');
-      expect(map[hashKey('key')]).toEqual(['b']);
-      expect(map.shift('key')).toEqual('b');
-      expect(map.shift('key')).toEqual(undefined);
-      expect(map[hashKey('key')]).toEqual(undefined);
+      expect(map.get('c')).toBeUndefined();
     });
 
-    it('should support primitive and object keys', function() {
-      var obj1 = {},
-          obj2 = {};
+    it('should maintain hashKey for object keys', function() {
+      var map = new HashMap();
+      var key = {};
+      map.get(key);
+      expect(key.$$hashKey).toBeDefined();
+    });
 
-      var map = new HashQueueMap();
-      map.push(obj1, 'a1');
-      map.push(obj1, 'a2');
-      map.push(obj2, 'b');
-      map.push(1, 'c');
-      map.push(undefined, 'd');
-      map.push(null, 'e');
+    it('should maintain hashKey for function keys', function() {
+      var map = new HashMap();
+      var key = function() {};
+      map.get(key);
+      expect(key.$$hashKey).toBeDefined();
+    });
 
-      expect(map[hashKey(obj1)]).toEqual(['a1', 'a2']);
-      expect(map[hashKey(obj2)]).toEqual(['b']);
-      expect(map[hashKey(1)]).toEqual(['c']);
-      expect(map[hashKey(undefined)]).toEqual(['d']);
-      expect(map[hashKey(null)]).toEqual(['e']);
+    it('should share hashKey between HashMap by default', function() {
+      var map1 = new HashMap(), map2 = new HashMap();
+      var key1 = {}, key2 = {};
+      map1.get(key1);
+      map2.get(key2);
+      expect(key1.$$hashKey).not.toEqual(key2.$$hashKey);
+    });
+
+    it('should maintain hashKey per HashMap if flag is passed', function() {
+      var map1 = new HashMap([], true), map2 = new HashMap([], true);
+      var key1 = {}, key2 = {};
+      map1.get(key1);
+      map2.get(key2);
+      expect(key1.$$hashKey).toEqual(key2.$$hashKey);
     });
   });
 });
